@@ -31,6 +31,8 @@ import com.hyphenate.chat.EMMessage;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import cn.bmob.v3.BmobUser;
 
@@ -105,7 +107,7 @@ public class ChatWidthFriendActivity extends AppCompatActivity implements EMMess
                     EMMessage message = EMMessage.createTxtSendMessage(content, friendName);
                     EMClient.getInstance().chatManager().sendMessage(message);
                     msgList.add(msg);
-                    msgAdapter.updateData(msgList);
+                    msgAdapter.notifyItemInserted(msgList.size()-1);
                     msg_recyclerView.scrollToPosition(msgList.size()-1);//将消息定位到最后一行
                     input_text.setText("");
                     message.setMessageStatusCallback(new EMCallBack() {
@@ -138,7 +140,9 @@ public class ChatWidthFriendActivity extends AppCompatActivity implements EMMess
         ChatWidthFriend friend= (ChatWidthFriend) getIntent().getSerializableExtra("friend");
         friendName=friend.getName();
         mineName=user.getUsername();
+        Log.e("friend:",""+friendName);
         byte[] friendByte=friend.getImgByte();
+        Log.e("friendIMG:",""+friendByte.length);
         byte[] mineByte=user.getImg_msg();
         friendImg= getBitmapFromByte(friendByte);
         mineImg= getBitmapFromByte(mineByte);
@@ -183,13 +187,19 @@ public class ChatWidthFriendActivity extends AppCompatActivity implements EMMess
 
     @Override
     public void onMessageReceived(List<EMMessage> list) {
-        for(int i=0;i<list.size();i++){
-            Msg msg=new Msg( list.get(i).getBody().toString(),Msg.TYPE_RECEIVED);
-            msg.setMineName(friendName);
-            msg.setMineImg(friendImg);
-            msgList.add(msg);
-        }
-        msgAdapter.updateData(msgList);
+
+        EMMessage emMessage=list.get(list.size()-1);
+        String content=  getContentMessage(emMessage.getBody().toString());//截取双引号中的内容
+        Msg msg=new Msg(content,Msg.TYPE_RECEIVED);
+        msgList.add(msg);
+        msg.setFriednImg(friendImg);
+        msgAdapter.notifyItemInserted(msgList.size()-1);
+        msg_recyclerView.scrollToPosition(msgList.size()-1);
+    }
+
+    private String getContentMessage(String s) {
+        String content=s.substring(5,s.length()-1);
+        return content;
     }
 
     @Override
