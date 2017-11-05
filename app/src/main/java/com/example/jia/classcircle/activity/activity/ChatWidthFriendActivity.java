@@ -147,6 +147,7 @@ public class ChatWidthFriendActivity extends AppCompatActivity implements EMMess
         friendImg= getBitmapFromByte(friendByte);
         mineImg= getBitmapFromByte(mineByte);
 
+
         msg_recyclerView= (RecyclerView) findViewById(R.id.msg_recyclerView);
         input_text= (EditText) findViewById(R.id.input_text);
         btn_chatSend= (Button) findViewById(R.id.btn_chatSend);

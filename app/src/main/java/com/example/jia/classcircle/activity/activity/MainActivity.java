@@ -110,13 +110,13 @@ public class MainActivity extends AppCompatActivity {
 
     private void showFunctionInterface() {
         //记得判断身份后，调用正确的展示数组
-        studentFunctionName = new String[]{"接收通知", "上传资料", "参与投票", "班级相册", "参与考勤", "班级二维码"};
-        managerFunctionName = new String[]{"发布通知", "收集资料", "推选评优", "设计投票", "班级相册", "查看考勤", "班级二维码"};
+        studentFunctionName = new String[]{"接收通知", "上传资料", "参与投票", "班级相册", "参与考勤", "班级二维码","朋友圈"};
+        managerFunctionName = new String[]{"发布通知", "收集资料", "推选评优", "设计投票", "班级相册", "查看考勤", "班级二维码","朋友圈"};
         studentFunctionImg = new int[]{R.drawable.ic_notice, R.drawable.ic_upload, R.drawable.ic_mainvote,
-                R.drawable.ic_photo, R.drawable.ic_check, R.drawable.ic_code};
+                R.drawable.ic_photo, R.drawable.ic_check, R.drawable.ic_code,R.drawable.ic_friendcricle};
         managerFunctionImg = new int[]{
                 R.drawable.ic_notice, R.drawable.ic_takepart, R.drawable.ic_appraise,
-                R.drawable.ic_activity, R.drawable.ic_photo, R.drawable.ic_check, R.drawable.ic_code
+                R.drawable.ic_activity, R.drawable.ic_photo, R.drawable.ic_check, R.drawable.ic_code,R.drawable.ic_friendcricle
         };
     }
 

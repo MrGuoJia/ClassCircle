@@ -208,12 +208,21 @@
             android:theme="@style/noTitleBar" />
         <activity
             android:name=".activity.activity.ShowClassmatesActivity"
-            android:theme="@style/noTitleBar"></activity>
-        <activity android:name=".activity.activity.ChatWidthFriendActivity"
+            android:theme="@style/noTitleBar" />
+        <activity
+            android:name=".activity.activity.ChatWidthFriendActivity"
+            android:theme="@style/noTitleBar" />
+        <activity
+            android:name=".activity.activity.SettingActivity"
+            android:theme="@style/noTitleBar" />
+        <activity android:name=".activity.activity.ShowPictureDetailActivity"
             android:theme="@style/noTitleBar"/>
-        <activity android:name=".activity.activity.SettingActivity"
+
+        <activity android:name=".activity.activity.FriendCircleActivity"
                   android:theme="@style/noTitleBar"/>
 
+        <activity android:name=".activity.activity.PublishActivity"
+                  android:theme="@style/noTitleBar"/>
 
     </application>
 

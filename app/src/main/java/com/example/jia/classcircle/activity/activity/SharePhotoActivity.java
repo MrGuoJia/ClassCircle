@@ -6,23 +6,29 @@ import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
 import com.example.jia.classcircle.R;
 import com.example.jia.classcircle.activity.adapter.CommentPictureMsgAdapter;
+import com.example.jia.classcircle.activity.adapter.GridViewAboutPhotoAdapter;
 import com.example.jia.classcircle.activity.bmobTable.APPUser;
 import com.example.jia.classcircle.activity.bmobTable.GetClientsTalk;
 import com.example.jia.classcircle.activity.bmobTable.PhotoAndComment;
+import com.example.jia.classcircle.activity.bmobTable.PhotoImgUrl;
 import com.example.jia.classcircle.activity.util.SharePreferenceUtil;
 import com.youth.banner.Banner;
 
@@ -42,6 +48,7 @@ import cn.bmob.v3.listener.UpdateListener;
 import cn.bmob.v3.listener.ValueEventListener;
 
 public class SharePhotoActivity extends AppCompatActivity {//实现班级相册
+
     private Toolbar toolbar_sharePhoto;
     private Banner banner_showPhoto;
     private RecyclerView recyclerView_talk_about_photo;
@@ -55,7 +62,6 @@ public class SharePhotoActivity extends AppCompatActivity {//实现班级相册
     private List<PhotoAndComment> commentList=new ArrayList<>();
     private List<GetClientsTalk> getClientsSpeakContentsList=new ArrayList<>();
     private CommentPictureMsgAdapter commentPictureMsgAdapter;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -67,6 +73,7 @@ public class SharePhotoActivity extends AppCompatActivity {//实现班级相册
         monitoringData();//监听数据变化
 
     }
+
 
     private void initGetComment() {
         BmobQuery<GetClientsTalk> queryChat=new BmobQuery<>(); //实现获取用户评价图片内容
@@ -81,6 +88,7 @@ public class SharePhotoActivity extends AppCompatActivity {//实现班级相册
                 }
             }
         });
+
 
 
     }
@@ -146,6 +154,35 @@ public class SharePhotoActivity extends AppCompatActivity {//实现班级相册
                 }
             }
         });
+        final BmobRealTimeData rtd3 = new BmobRealTimeData();//监听照片表删除,没实现阿
+        rtd3.start(new ValueEventListener() {
+            @Override
+            public void onConnectCompleted(Exception e) {
+                if(rtd3.isConnected()){
+                    rtd3.subTableDelete("PhotoAndComment");
+                    Log.e("imgurl","删除监听");
+                }
+            }
+
+            @Override
+            public void onDataChange(JSONObject jsonObject) {
+                if(BmobRealTimeData.ACTION_DELETETABLE.equals(jsonObject.optString("action"))){
+                    JSONObject data = jsonObject.optJSONObject("data");
+                    String url= (String) data.opt("photo");
+                    String className=(String) data.opt("className");
+                    //获取的班级名一致。user
+                    if(url!=null){
+                        if(url.length()>0 && className.equals(user.getClassName())){
+                            Log.e("imgurl",url);
+                           // getInternetImgUrl.remove(url);
+
+                            startBanner(getInternetImgUrl);
+                        }
+                    }
+                }
+            }
+        });
+
     }
 
 
@@ -225,9 +262,33 @@ public class SharePhotoActivity extends AppCompatActivity {//实现班级相册
         final AlertDialog dialog=builder.create();
         View getDeleteView=View.inflate(SharePhotoActivity.this,R.layout.dialog_delete_photo,null);
         dialog.setView(getDeleteView ,0, 0, 0, 0);
+        GridView show_detail_gridView_photo= (GridView) getDeleteView.findViewById(R.id.show_detail_gridView_photo);
+        GridViewAboutPhotoAdapter aboutPhotoAdapter=new GridViewAboutPhotoAdapter(SharePhotoActivity.this,getInternetImgUrl);
+        show_detail_gridView_photo.setAdapter(aboutPhotoAdapter);
+        show_detail_gridView_photo.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                //九宫格图片显示，将其放大，手势滑动达到一张张显示
+                Intent intent=new Intent(SharePhotoActivity.this,ShowPictureDetailActivity.class);
+                PhotoImgUrl url=new PhotoImgUrl();
+                url.setImgUrl(getInternetImgUrl);
+                url.setGetInternetImgUrlID(getInternetImgUrlID);
+                url.setPosition(position);
+                intent.putExtra("url",url);
+                startActivity(intent);
+            }
+        });
+        CardView card_delete= (CardView) getDeleteView.findViewById(R.id.card_delete);
         ImageView img_delete= (ImageView) getDeleteView.findViewById(R.id.img_delete);
         ImageView img_close=(ImageView) getDeleteView.findViewById(R.id.img_close);
         Button btn_delete_sure= (Button) getDeleteView.findViewById(R.id.btn_delete_sure);
+
+        if(user.getIndentity().equals("学生")){
+            card_delete.setVisibility(View.INVISIBLE);
+            img_delete.setVisibility(View.INVISIBLE);
+            btn_delete_sure.setVisibility(View.INVISIBLE);
+        }
+
         Glide.with(getApplicationContext()).load(getInternetImgUrl.get(position-1)).into(img_delete);//将取到的的图片展示
         img_close.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -235,9 +296,7 @@ public class SharePhotoActivity extends AppCompatActivity {//实现班级相册
                 dialog.dismiss();
             }
         });
-        if(user.getIndentity().equals("学生")){
-            btn_delete_sure.setVisibility(View.INVISIBLE);
-        }
+
         btn_delete_sure.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -245,13 +304,16 @@ public class SharePhotoActivity extends AppCompatActivity {//实现班级相册
                     Toast.makeText(SharePhotoActivity.this,"管理员删除",Toast.LENGTH_SHORT).show();
                     PhotoAndComment photoAndComment=new PhotoAndComment();
                     photoAndComment.setObjectId(getInternetImgUrlID.get(position-1));
+
+
                     photoAndComment.delete(new UpdateListener() {
                         @Override
                         public void done(BmobException e) {
                             if(e==null){
-                                //getInternetImgUrl.remove(position-1);
+                                getInternetImgUrl.remove(position-1);
                                 getInternetImgUrl.clear();
                                 initData();
+                                Toast.makeText(SharePhotoActivity.this,"删除成功",Toast.LENGTH_SHORT).show();
                                 dialog.dismiss();
                             }
                         }
@@ -260,6 +322,7 @@ public class SharePhotoActivity extends AppCompatActivity {//实现班级相册
                 }
             }
         });
+
 
         dialog.show();
     }
